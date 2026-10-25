@@ -1,0 +1,1558 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PetGarden · 动态宠物参考原型</title>
+<style>
+  :root {
+    --paper: #FAF6EC;
+    --surface: #FFFDF7;
+    --surface-sunken: #F1E9DA;
+    --line: #DED3BF;
+    --line-strong: #C9BBA3;
+    --ink: #252A26;
+    --ink-soft: #5F665D;
+    --ink-faint: #8A8F86;
+    --moss: #4F6F52;
+    --moss-deep: #3E5A42;
+    --moss-soft: #E3EBDD;
+    --clay: #B85C3E;
+    --honey: #E6B04A;
+    --sky: #6BA6BC;
+    --rose: #B45F72;
+    --danger: #A94438;
+    --focus: #2F6FB3;
+    --radius-sm: 10px;
+    --radius-md: 16px;
+    --radius-lg: 24px;
+    --radius-xl: 32px;
+    --shadow-card: 0 8px 24px rgba(63, 52, 35, .07);
+    --shadow-pop: 0 18px 50px rgba(63, 52, 35, .14);
+    --font-ui: "Microsoft YaHei UI", "PingFang SC", "Noto Sans SC", system-ui, sans-serif;
+    --font-display: "Georgia", "Songti SC", "SimSun", serif;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-ui);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: .22;
+    background-image: radial-gradient(var(--line-strong) .55px, transparent .55px);
+    background-size: 18px 18px;
+  }
+  button, input { font: inherit; }
+  button { color: inherit; }
+  button:focus-visible, input:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+
+  .wrap {
+    position: relative;
+    z-index: 1;
+    width: min(1240px, 100%);
+    margin: 0 auto;
+    padding: 44px 24px 64px;
+  }
+
+  .masthead { max-width: 820px; margin-bottom: 30px; }
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 14px;
+    color: var(--moss-deep);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+  }
+  .eyebrow::before {
+    content: "";
+    width: 26px;
+    height: 1px;
+    background: var(--moss);
+  }
+  h1 {
+    margin: 0 0 12px;
+    font-family: var(--font-display);
+    font-size: clamp(34px, 4.4vw, 58px);
+    line-height: 1.08;
+    letter-spacing: -.02em;
+    font-weight: 700;
+  }
+  .lede {
+    margin: 0;
+    max-width: 720px;
+    color: var(--ink-soft);
+    font-size: 16px;
+  }
+  .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 18px;
+  }
+  .meta-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 11px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: rgba(255, 253, 247, .6);
+    color: var(--ink-soft);
+    font-size: 12px;
+  }
+  .meta-pill b { color: var(--ink); font-weight: 700; }
+
+  .hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1.06fr) minmax(0, .94fr);
+    gap: 24px;
+    align-items: stretch;
+  }
+
+  .hero-pet-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 500px;
+    padding: 28px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-xl);
+    background: var(--surface);
+    box-shadow: var(--shadow-card);
+  }
+  .hero-pet-card::before {
+    content: "";
+    position: absolute;
+    left: 12%;
+    bottom: -18%;
+    width: 76%;
+    height: 78%;
+    border-radius: 50% 50% 22% 22%;
+    background: radial-gradient(circle at 50% 18%, rgba(79, 111, 82, .10), rgba(241, 233, 218, .55) 58%, transparent 72%);
+    pointer-events: none;
+  }
+  .hero-ribbon {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 2;
+    padding: 6px 12px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--surface);
+    color: var(--moss-deep);
+    font-size: 12px;
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgba(63, 52, 35, .05);
+  }
+  .hero-pet {
+    position: relative;
+    z-index: 1;
+    width: min(380px, 86%);
+    margin: 8px 0 4px;
+  }
+  .hero-caption {
+    position: relative;
+    z-index: 1;
+    margin-top: 4px;
+    color: var(--ink-soft);
+    font-size: 13px;
+    text-align: center;
+  }
+  .hero-caption b {
+    color: var(--ink);
+    font-weight: 700;
+  }
+
+  .hero-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 26px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-xl);
+    background: var(--surface);
+    box-shadow: var(--shadow-card);
+  }
+  .control-group { display: flex; flex-direction: column; gap: 9px; }
+  .label {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    color: var(--ink-soft);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .06em;
+  }
+  .label strong {
+    color: var(--ink);
+    font-family: var(--font-display);
+    font-size: 15px;
+    letter-spacing: 0;
+  }
+
+  .segmented {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 4px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: var(--surface-sunken);
+  }
+  .segmented button {
+    flex: 1 1 auto;
+    min-width: 62px;
+    padding: 8px 10px;
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--ink-soft);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .15s ease, color .15s ease, box-shadow .15s ease;
+    white-space: nowrap;
+  }
+  .segmented button:hover { color: var(--ink); }
+  .segmented button.active {
+    background: var(--surface);
+    color: var(--moss-deep);
+    box-shadow: 0 2px 8px rgba(63, 52, 35, .08);
+  }
+  .segmented button i {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    margin-right: 5px;
+    border-radius: 50%;
+    background: var(--dot, var(--moss));
+    vertical-align: 1px;
+  }
+
+  .range {
+    width: 100%;
+    height: 8px;
+    margin: 2px 0 0;
+    accent-color: var(--moss);
+    cursor: pointer;
+  }
+  .stage-rail {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 5px;
+  }
+  .stage-chip {
+    padding: 5px 2px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--ink-faint);
+    font-size: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .15s ease, color .15s ease, border-color .15s ease;
+  }
+  .stage-chip:hover { color: var(--ink-soft); background: var(--surface-sunken); }
+  .stage-chip.active {
+    border-color: var(--moss);
+    background: var(--moss-soft);
+    color: var(--moss-deep);
+  }
+
+  .score-row {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 16px 18px;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background: linear-gradient(180deg, var(--surface), rgba(241, 233, 218, .35));
+  }
+  .score-big {
+    display: flex;
+    align-items: baseline;
+    gap: 3px;
+    min-width: 112px;
+    font-family: var(--font-display);
+    font-variant-numeric: tabular-nums;
+  }
+  .score-big span { font-size: 54px; line-height: .95; font-weight: 700; }
+  .score-big small { color: var(--ink-faint); font-size: 14px; }
+  .score-side { flex: 1; min-width: 0; }
+  .score-status {
+    margin-bottom: 8px;
+    color: var(--ink-soft);
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .progress {
+    width: 100%;
+    height: 8px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: var(--surface-sunken);
+  }
+  .progress i {
+    display: block;
+    width: 0;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, var(--moss), #7A9A72);
+    transition: width .22s ease;
+  }
+
+  .actions { display: flex; gap: 10px; }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 48px;
+    padding: 0 18px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: var(--surface);
+    color: var(--ink);
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform .12s ease, box-shadow .12s ease, background .12s ease;
+  }
+  .btn:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(63, 52, 35, .09); }
+  .btn:active { transform: translateY(1px); box-shadow: none; }
+  .btn-primary {
+    flex: 1;
+    border-color: var(--moss);
+    background: var(--moss);
+    color: #FFFDF7;
+  }
+  .btn-primary:hover { background: var(--moss-deep); }
+  .btn-down { flex: 0 0 92px; color: var(--ink-soft); }
+
+  .toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--ink-soft);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    user-select: none;
+  }
+  .toggle input { position: absolute; opacity: 0; pointer-events: none; }
+  .switch {
+    position: relative;
+    width: 38px;
+    height: 22px;
+    border-radius: 999px;
+    background: var(--line-strong);
+    transition: background .18s ease;
+  }
+  .switch::after {
+    content: "";
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--surface);
+    box-shadow: 0 1px 4px rgba(63, 52, 35, .2);
+    transition: transform .18s ease;
+  }
+  .toggle input:checked + .switch { background: var(--moss); }
+  .toggle input:checked + .switch::after { transform: translateX(16px); }
+  .toggle input:focus-visible + .switch { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+  .hint {
+    margin: 0;
+    padding-top: 2px;
+    border-top: 1px dashed var(--line);
+    color: var(--ink-faint);
+    font-size: 12px;
+    line-height: 1.6;
+  }
+
+  .classroom { margin-top: 46px; }
+  .section-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 18px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  .section-head h2 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: clamp(24px, 2.4vw, 34px);
+    line-height: 1.15;
+    letter-spacing: -.01em;
+  }
+  .section-head p {
+    margin: 0;
+    color: var(--ink-soft);
+    font-size: 13px;
+  }
+  .class-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(116px, 1fr));
+    gap: 10px;
+  }
+  .mini-card {
+    position: relative;
+    padding: 8px 8px 10px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background: var(--surface);
+    text-align: center;
+    transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+  }
+  .mini-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--line-strong);
+    box-shadow: 0 8px 18px rgba(63, 52, 35, .08);
+  }
+  .mini-pet {
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    height: 94px;
+  }
+  .mini-name {
+    margin-top: 1px;
+    overflow: hidden;
+    color: var(--ink);
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+  .mini-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 5px;
+    margin-top: 1px;
+  }
+  .mini-score {
+    font-family: var(--font-display);
+    font-size: 23px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+  }
+  .mini-lv { color: var(--ink-faint); font-size: 9px; white-space: nowrap; }
+  .mini-actions {
+    display: flex;
+    gap: 4px;
+    margin-top: 6px;
+  }
+  .mini-actions button {
+    flex: 1;
+    min-height: 28px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: transparent;
+    color: var(--ink-soft);
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background .12s ease, color .12s ease, transform .12s ease;
+  }
+  .mini-actions button:hover { transform: translateY(-1px); }
+  .mini-actions button[data-action="up"] {
+    border-color: var(--moss);
+    background: var(--moss);
+    color: #FFFDF7;
+  }
+  .mini-actions button[data-action="up"]:hover { background: var(--moss-deep); }
+  .mini-actions button[data-action="down"]:hover { background: var(--surface-sunken); }
+
+  .evolve-toast {
+    position: absolute;
+    top: 7px;
+    right: 7px;
+    z-index: 4;
+    padding: 2px 7px;
+    border-radius: 999px;
+    background: var(--moss);
+    color: #FFFDF7;
+    font-size: 9px;
+    font-weight: 700;
+    animation: pop .9s cubic-bezier(.2, .8, .2, 1) forwards;
+    pointer-events: none;
+  }
+
+  .spark {
+    position: absolute;
+    left: 50%;
+    top: 44%;
+    z-index: 5;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    pointer-events: none;
+    animation: spark .8s ease-out forwards;
+  }
+
+  .footer {
+    margin-top: 52px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+    color: var(--ink-faint);
+    font-size: 12px;
+    line-height: 1.7;
+  }
+  .footer b { color: var(--ink-soft); }
+
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: 28px;
+    z-index: 100;
+    max-width: min(90vw, 520px);
+    padding: 10px 18px;
+    border-radius: 999px;
+    background: var(--ink);
+    color: var(--paper);
+    font-size: 13px;
+    opacity: 0;
+    transform: translate(-50%, 14px);
+    pointer-events: none;
+    transition: opacity .18s ease, transform .18s ease;
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+  /* ── 宠物 SVG ───────────────────────────────────────────── */
+  .pet-svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+  .pet-scale { pointer-events: none; }
+  .pet-root {
+    transform-box: view-box;
+    transform-origin: 100px 180px;
+  }
+  .body-shape {
+    transform-box: view-box;
+    transform-origin: 100px 180px;
+    animation: breathe 3.2s ease-in-out infinite;
+  }
+  .head-group {
+    transform-box: view-box;
+    animation: bob 2.8s ease-in-out infinite;
+    animation-delay: var(--bob-delay, 0s);
+  }
+  .tail {
+    transform-box: view-box;
+    transform-origin: var(--tail-x) var(--tail-y);
+    animation: sway var(--sway-duration) ease-in-out infinite;
+    animation-delay: var(--sway-delay);
+  }
+  .ear {
+    transform-box: fill-box;
+    transform-origin: 50% 92%;
+    animation: ear 5s ease-in-out infinite;
+    animation-delay: var(--ear-delay);
+  }
+  .ear-r { animation-delay: calc(var(--ear-delay) - .7s); }
+  .eyes {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: blink var(--blink-duration) ease-in-out infinite;
+    animation-delay: var(--blink-delay);
+  }
+  .pet-aura {
+    transform-box: view-box;
+    transform-origin: 100px 108px;
+    animation: aura-spin 24s linear infinite;
+  }
+  .pet-particle {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: particle 3s ease-in-out infinite;
+    animation-delay: calc(var(--i) * -.375s);
+  }
+  .evolve-burst {
+    opacity: 0;
+    transform-box: view-box;
+    transform-origin: 100px 108px;
+  }
+  .reaction-cheer { animation: cheer .9s cubic-bezier(.2, .8, .2, 1); }
+  .reaction-comfort { animation: comfort .7s ease-out; }
+  .reaction-evolve { animation: evolve 1.1s cubic-bezier(.2, .8, .2, 1); }
+  .reaction-evolve .evolve-burst { animation: burst 1.1s ease-out; }
+
+  @keyframes breathe {
+    0%, 100% { transform: scale(1, 1); }
+    50% { transform: scale(1.018, .985); }
+  }
+  @keyframes bob {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-2.5px); }
+  }
+  @keyframes sway {
+    0%, 100% { transform: rotate(-4deg); }
+    50% { transform: rotate(5deg); }
+  }
+  @keyframes ear {
+    0%, 100% { transform: rotate(-2deg); }
+    50% { transform: rotate(2deg); }
+  }
+  @keyframes blink {
+    0%, 92%, 100% { transform: scaleY(1); }
+    94%, 96% { transform: scaleY(.08); }
+    98% { transform: scaleY(1); }
+  }
+  @keyframes aura-spin { to { transform: rotate(360deg); } }
+  @keyframes particle {
+    0% { opacity: 0; transform: translateY(6px) scale(.6); }
+    30% { opacity: .85; }
+    100% { opacity: 0; transform: translateY(-18px) scale(1); }
+  }
+  @keyframes cheer {
+    0% { transform: translateY(0) scale(1); }
+    25% { transform: translateY(2px) scale(.96, .94); }
+    55% { transform: translateY(-10px) scale(1.06, 1.08); }
+    75% { transform: translateY(0) scale(1.02, .98); }
+    100% { transform: translateY(0) scale(1); }
+  }
+  @keyframes comfort {
+    0%, 100% { transform: translateY(0) rotate(0) scale(1); }
+    40% { transform: translateY(2px) rotate(-3deg) scale(.98); }
+    70% { transform: translateY(1px) rotate(-1deg) scale(.99); }
+  }
+  @keyframes evolve {
+    0% { transform: scale(1); }
+    30% { transform: scale(.94); }
+    62% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+  }
+  @keyframes burst {
+    0% { opacity: .75; transform: scale(.42); }
+    100% { opacity: 0; transform: scale(1.7); }
+  }
+  @keyframes spark {
+    0% { opacity: 0; transform: translate(0, 0) scale(.4) rotate(0); }
+    25% { opacity: 1; }
+    100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(1) rotate(120deg); }
+  }
+  @keyframes pop {
+    0% { opacity: 0; transform: scale(.6) translateY(4px); }
+    30% { opacity: 1; transform: scale(1.08) translateY(0); }
+    100% { opacity: 0; transform: scale(1) translateY(-8px); }
+  }
+
+  /* 减少动效：停止循环动画，保留表情/饰品/数字变化 */
+  .reduced .body-shape,
+  .reduced .head-group,
+  .reduced .tail,
+  .reduced .ear,
+  .reduced .eyes,
+  .reduced .pet-aura,
+  .reduced .pet-particle,
+  .reduced .reaction-cheer,
+  .reduced .reaction-comfort,
+  .reduced .reaction-evolve,
+  .reduced .reaction-evolve .evolve-burst,
+  .reduced .spark,
+  .reduced .evolve-toast {
+    animation: none !important;
+  }
+  .reduced .pet-particle,
+  .reduced .evolve-burst,
+  .reduced .spark { display: none !important; }
+
+  @media (max-width: 940px) {
+    .hero { grid-template-columns: 1fr; }
+    .hero-pet-card { min-height: 410px; }
+    .hero-pet { width: min(340px, 74%); }
+  }
+  @media (max-width: 600px) {
+    .wrap { padding: 28px 14px 48px; }
+    .hero-controls { padding: 18px; }
+    .hero-pet-card { min-height: 340px; padding: 18px; }
+    .hero-pet { width: min(280px, 88%); }
+    .class-grid { grid-template-columns: repeat(auto-fill, minmax(102px, 1fr)); gap: 8px; }
+    .mini-pet { height: 82px; }
+    .segmented button { min-width: 54px; padding: 7px 6px; font-size: 11px; }
+    .score-big span { font-size: 46px; }
+    .btn-down { flex-basis: 76px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="eyebrow">PetGarden · 技术参考原型</div>
+    <h1>宠物会呼吸，课堂才有生命感。</h1>
+    <p class="lede">
+      这是给实现 Agent 的动画参考：全部宠物由浏览器里的内联 SVG 和 CSS 关键帧实时绘制，
+      不加载任何图片。切换物种、拖动积分、点击加减分，观察呼吸、眨眼、摇尾、心情和进化反应。
+    </p>
+    <div class="meta-row">
+      <span class="meta-pill"><b>6</b> 个物种</span>
+      <span class="meta-pill"><b>5</b> 个成长阶段</span>
+      <span class="meta-pill"><b>3</b> 种心情</span>
+      <span class="meta-pill"><b>0</b> 张图片</span>
+      <span class="meta-pill"><b>CSS</b> 动画，无逐帧 JS</span>
+    </div>
+  </header>
+
+  <section class="hero" aria-label="宠物动画实验台">
+    <div class="hero-pet-card" id="heroPetCard">
+      <div class="hero-ribbon" id="stageRibbon">Lv4 · 蜕变</div>
+      <div class="hero-pet" id="heroPet"></div>
+      <div class="hero-caption">参考原型 · 最终界面以需求文档和自建设计系统为准</div>
+    </div>
+
+    <div class="hero-controls">
+      <div class="control-group">
+        <div class="label"><span>物种</span><strong id="speciesName">小猫</strong></div>
+        <div class="segmented" id="speciesTabs">
+          <button type="button" data-species="cat"><i style="--dot:#D98A4F"></i>小猫</button>
+          <button type="button" data-species="dog"><i style="--dot:#A56A3D"></i>小狗</button>
+          <button type="button" data-species="rabbit"><i style="--dot:#D88FA4"></i>小兔</button>
+          <button type="button" data-species="panda"><i style="--dot:#3B413C"></i>熊猫</button>
+          <button type="button" data-species="fox"><i style="--dot:#B85C3E"></i>小狐</button>
+          <button type="button" data-species="dragon"><i style="--dot:#2E6E68"></i>青龙</button>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label class="label" for="scoreRange">
+          <span>积分</span><strong><span id="scoreValue">64</span> / 100</strong>
+        </label>
+        <input class="range" id="scoreRange" type="range" min="0" max="100" value="64" step="1">
+        <div class="stage-rail" id="stageRail">
+          <button type="button" class="stage-chip" data-score="10">初遇</button>
+          <button type="button" class="stage-chip" data-score="30">相伴</button>
+          <button type="button" class="stage-chip" data-score="50">默契</button>
+          <button type="button" class="stage-chip" data-score="70">蜕变</button>
+          <button type="button" class="stage-chip" data-score="90">传说</button>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <div class="label"><span>心情预览</span><strong id="moodName">自动</strong></div>
+        <div class="segmented" id="moodTabs">
+          <button type="button" data-mood="auto">自动</button>
+          <button type="button" data-mood="happy">开心</button>
+          <button type="button" data-mood="neutral">一般</button>
+          <button type="button" data-mood="sad">低落</button>
+        </div>
+      </div>
+
+      <div class="score-row">
+        <div class="score-big"><span id="heroScore">64</span><small>/100</small></div>
+        <div class="score-side">
+          <div class="score-status" id="heroStatus">Lv4 · 蜕变 · 开心</div>
+          <div class="progress"><i id="heroProgress" style="width:64%"></i></div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button type="button" class="btn btn-down" id="heroDown">−1</button>
+        <button type="button" class="btn btn-primary" id="heroUp">+1</button>
+      </div>
+
+      <label class="toggle">
+        <input type="checkbox" id="reducedToggle">
+        <span class="switch"></span>
+        <span>减少动效</span>
+      </label>
+
+      <p class="hint">
+        点击 +1 / −1 看即时反应；把积分推过 20 / 40 / 60 / 80 会触发升级。
+        「减少动效」会停止循环动画，但保留表情、阶段饰品和数字变化。
+      </p>
+    </div>
+  </section>
+
+  <section class="classroom" aria-label="全班宠物预览">
+    <div class="section-head">
+      <h2>全班预览 · 40 只同时动</h2>
+      <p>点击任意卡片的 +1 / −1，观察该宠物独立反应。每只宠物的眨眼/摇尾相位都不同。</p>
+    </div>
+    <div class="class-grid" id="classGrid"></div>
+  </section>
+
+  <footer class="footer">
+    <b>实现提示：</b>这个文件只用于验证技术路线与动画手感。正式项目请按
+    <code>REQUIREMENTS.md</code> 第 11 章拆成 <code>PetSprite.vue</code>、物种组件、
+    <code>PetFace.vue</code>、<code>StageAccessories.vue</code> 和共享 <code>pet.css</code>，
+    并用学生 id 作为动画相位 seed，避免全班同步眨眼。
+  </footer>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ── 基础配置 ─────────────────────────────────────────── */
+
+  const SPECIES = {
+    cat: {
+      name: '小猫',
+      body: '#F4D6B4',
+      belly: '#FFF2DF',
+      accent: '#D98A4F',
+      inner: '#F2B39A',
+      ink: '#252A26'
+    },
+    dog: {
+      name: '小狗',
+      body: '#E7BC8C',
+      belly: '#FFF3E2',
+      accent: '#A56A3D',
+      inner: '#C98C61',
+      ink: '#252A26'
+    },
+    rabbit: {
+      name: '小兔',
+      body: '#F6E7E8',
+      belly: '#FFFAFA',
+      accent: '#D88FA4',
+      inner: '#F2BCCB',
+      ink: '#4A3438'
+    },
+    panda: {
+      name: '熊猫',
+      body: '#F5F1E7',
+      belly: '#FFFFFF',
+      accent: '#3B413C',
+      inner: '#D9D4C9',
+      ink: '#2B302C'
+    },
+    fox: {
+      name: '小狐',
+      body: '#E79A5C',
+      belly: '#FFF3DF',
+      accent: '#B85C3E',
+      inner: '#F6D3B6',
+      ink: '#3B2A22'
+    },
+    dragon: {
+      name: '青龙',
+      body: '#7EC2B8',
+      belly: '#DDF4EE',
+      accent: '#2E6E68',
+      inner: '#A9DCD4',
+      ink: '#1F3A37'
+    }
+  };
+
+  const SPECIES_ORDER = ['cat', 'dog', 'rabbit', 'panda', 'fox', 'dragon'];
+  const SPECIES_PATTERN = ['cat', 'dog', 'rabbit', 'fox', 'panda', 'cat', 'dog', 'rabbit', 'fox', 'dragon'];
+  const STAGES = ['初遇', '相伴', '默契', '蜕变', '传说'];
+  const SCALES = [0.88, 0.94, 1.00, 1.05, 1.12];
+  const TAIL_ORIGIN = {
+    cat: [140, 150],
+    dog: [140, 148],
+    rabbit: [146, 160],
+    panda: [146, 160],
+    fox: [138, 150],
+    dragon: [138, 156]
+  };
+
+  const NAMES = [
+    '林小满', '陈一诺', '王梓涵', '李思远', '赵可欣',
+    '周亦辰', '吴雨桐', '郑浩然', '孙沐阳', '徐若溪',
+    '胡星辰', '朱语汐', '高子轩', '何知夏', '郭明宇',
+    '马嘉禾', '罗清越', '梁书宁', '宋安歌', '唐予安',
+    '许云舟', '韩乐言', '冯初晴', '邓景行', '曹南乔',
+    '彭星野', '曾若谷', '萧远山', '田禾', '董一川',
+    '袁满', '潘知秋', '于小北', '蒋听澜', '蔡嘉树',
+    '余青禾', '杜星河', '叶知微', '程向南', '苏晚晴'
+  ];
+
+  const SCORES = [
+    8, 25, 45, 65, 88, 100, 15, 35, 55, 75,
+    95, 5, 30, 50, 70, 90, 18, 42, 62, 82,
+    98, 12, 28, 48, 68, 86, 22, 38, 58, 78,
+    92, 10, 32, 52, 72, 84, 16, 44, 64, 96
+  ];
+
+  /* ── 规则 ─────────────────────────────────────────────── */
+
+  function clamp(n, min, max) {
+    return Math.max(min, Math.min(max, n));
+  }
+
+  function levelFromScore(score) {
+    if (score < 20) return 1;
+    if (score < 40) return 2;
+    if (score < 60) return 3;
+    if (score < 80) return 4;
+    return 5;
+  }
+
+  function moodFromScore(score) {
+    if (score >= 60) return 'happy';
+    if (score >= 20) return 'neutral';
+    return 'sad';
+  }
+
+  function moodLabel(mood) {
+    return mood === 'happy' ? '开心' : mood === 'sad' ? '有点低落' : '一般';
+  }
+
+  function hash(seed) {
+    const s = String(seed);
+    let h = 2166136261;
+    for (let i = 0; i < s.length; i++) {
+      h ^= s.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    return Math.abs(h);
+  }
+
+  /* ── SVG 零件 ─────────────────────────────────────────── */
+
+  function aura(cfg) {
+    return '<g class="pet-aura">' +
+      '<circle cx="100" cy="108" r="72" fill="none" stroke="' + cfg.accent + '" stroke-width="1.8" stroke-dasharray="7 11" opacity=".36"/>' +
+      '<circle cx="100" cy="108" r="64" fill="none" stroke="' + cfg.accent + '" stroke-width="1" stroke-dasharray="2 13" opacity=".24"/>' +
+      '</g>';
+  }
+
+  function wings(cfg, level) {
+    const s = (0.82 + level * 0.055).toFixed(2);
+    return '<g class="dragon-wings" transform="translate(100 130) scale(' + s + ') translate(-100 -130)">' +
+      '<path d="M72 122 C58 98 34 78 20 84 C30 98 30 110 26 122 C38 118 46 124 50 134 C58 128 66 132 74 138 Z" fill="' + cfg.inner + '" stroke="' + cfg.ink + '" stroke-width="2" stroke-linejoin="round"/>' +
+      '<path d="M128 122 C142 98 166 78 180 84 C170 98 170 110 174 122 C162 118 154 124 150 134 C142 128 134 132 126 138 Z" fill="' + cfg.inner + '" stroke="' + cfg.ink + '" stroke-width="2" stroke-linejoin="round"/>' +
+      '<path d="M70 120 L28 92 M70 122 L32 111 M130 120 L172 92 M130 122 L168 111" stroke="' + cfg.accent + '" stroke-width="1.4" opacity=".38" stroke-linecap="round"/>' +
+      '</g>';
+  }
+
+  function tail(species, cfg) {
+    if (species === 'cat') {
+      return '<g class="tail">' +
+        '<path d="M140 150 C168 146 178 120 160 103" fill="none" stroke="' + cfg.ink + '" stroke-width="16" stroke-linecap="round"/>' +
+        '<path d="M140 150 C168 146 178 120 160 103" fill="none" stroke="' + cfg.accent + '" stroke-width="11" stroke-linecap="round"/>' +
+        '<circle cx="160" cy="103" r="6" fill="' + cfg.accent + '" stroke="' + cfg.ink + '" stroke-width="2"/>' +
+        '</g>';
+    }
+    if (species === 'dog') {
+      return '<g class="tail">' +
+        '<path d="M140 148 C166 142 174 120 166 102" fill="none" stroke="' + cfg.ink + '" stroke-width="15" stroke-linecap="round"/>' +
+        '<path d="M140 148 C166 142 174 120 166 102" fill="none" stroke="' + cfg.accent + '" stroke-width="10" stroke-linecap="round"/>' +
+        '<circle cx="166" cy="102" r="5.5" fill="' + cfg.accent + '" stroke="' + cfg.ink + '" stroke-width="2"/>' +
+        '</g>';
+    }
+    if (species === 'rabbit') {
+      return '<g class="tail">' +
+        '<circle cx="148" cy="162" r="11" fill="' + cfg.belly + '" stroke="' + cfg.ink + '" stroke-width="2.2"/>' +
+        '<circle cx="148" cy="162" r="5" fill="' + cfg.inner + '" opacity=".7"/>' +
+        '</g>';
+    }
+    if (species === 'panda') {
+      return '<g class="tail">' +
+        '<circle cx="146" cy="162" r="9" fill="' + cfg.ink + '"/>' +
+        '<circle cx="146" cy="160" r="3" fill="' + cfg.body + '" opacity=".35"/>' +
+        '</g>';
+    }
+    if (species === 'fox') {
+      return '<g class="tail">' +
+        '<path d="M138 150 C172 146 186 118 168 94 C158 112 146 122 132 130 Z" fill="' + cfg.accent + '" stroke="' + cfg.ink + '" stroke-width="2.2" stroke-linejoin="round"/>' +
+        '<ellipse cx="166" cy="97" rx="10" ry="8" transform="rotate(-30 166 97)" fill="' + cfg.belly + '" opacity=".95"/>' +
+        '</g>';
+    }
+    return '<g class="tail">' +
+      '<path d="M138 156 C180 160 188 190 144 190 C122 190 116 176 132 170" fill="none" stroke="' + cfg.ink + '" stroke-width="18" stroke-linecap="round"/>' +
+      '<path d="M138 156 C180 160 188 190 144 190 C122 190 116 176 132 170" fill="none" stroke="' + cfg.accent + '" stroke-width="13" stroke-linecap="round"/>' +
+      '<path d="M132 170 L118 162 L124 178 Z" fill="' + cfg.accent + '" stroke="' + cfg.ink + '" stroke-width="1.5" stroke-linejoin="round"/>' +
+      '</g>';
+  }
+
+  function scarf(cfg) {
+    return '<g>' +
+      '<path d="M64 132 Q100 150 136 132 L134 143 Q100 160 66 143 Z" fill="' + cfg.accent + '" stroke="' + cfg.ink + '" stroke-width="2.2" stroke-linejoin="round"/>' +
+      '<circle cx="100" cy="146" r="5" fill="' + cfg.belly + '" stroke="' + cfg.ink + '" stroke-width="1.5"/>' +
+      '</g>';
+  }
+
+  function badge(cfg) {
+    return '<g>' +
+      '<circle cx="100" cy="156" r="7.5" fill="#E6B04A" stroke="' + cfg.ink + '" stroke-width="1.8"/>' +
+      '<path d="M100 151.5 L101.6 155 L105.3 155.2 L102.4 157.6 L103.4 161.2 L100 159.2 L96.6 161.2 L97.6 157.6 L94.7 155.2 L98.4 155 Z" fill="#FFFDF7" opacity=".9"/>' +
+      '</g>';
+  }
+
+  function body(species, cfg, level) {
+    const scales = species === 'dragon'
+      ? '<path d="M82 154 Q100 162 118 154 M86 162 Q100 169 114 162" fill="none" stroke="' + cfg.accent + '" stroke-width="1.5" opacity=".35" stroke-linecap="round"/>'
+      : '';
+    return '<g class="body-shape">' +
+      '<ellipse cx="100" cy="145" rx="46" ry="36" fill="' + cfg.body + '" stroke="' + cfg.ink + '" stroke-width="2.5"/>' +
+      '<ellipse cx="100" cy="151" rx="28" ry="24" fill="' + cfg.belly + '" opacity=".92"/>' +
+      scales +
+      '<ellipse cx="78" cy="172" rx="15" ry="8" fill="' + cfg.body + '" stroke="' + cfg.ink + '" stroke-width="2"/>' +
+      '<ellipse cx="122" cy="172" rx="15" ry="8" fill="' + cfg.body + '" stroke="' + cfg.ink + '" stroke-width="2"/>' +
+      (level >= 2 ? scarf(cfg) : '') +
+      (level >= 3 ? badge(cfg) : '') +
+      '</g>';
+  }
+
+  function earWrap(inner, transform, extraClass) {
+    return '<g transform="' + transform + '">' +
+      '<g class="ear ' + (extraClass || '') + '">' + inner + '</g>' +
+      '</g>';
+  }
+
+  function ears(species, cfg, mood) {
+    const tilt = mood === 'sad' ? 6 : mood === 'happy' ? -2 : 0;
+    const ink = cfg.ink;
+
+    if (species === 'cat') {
+      return '<g class="ears">' +
+        earWrap(
+          '<path d="M62 64 L54 26 L88 48 Z" fill="' + cfg.body + '" stroke="' + ink + '" stroke-width="2.5" stroke-linejoin="round"/>' +
+          '<path d="M66 57 L62 37 L80 49 Z" fill="' + cfg.inner + '" opacity=".9"/>',
+          'rotate(' + tilt + ' 74 60)', 'ear-l'
+        ) +
+        earWrap(
+          '<path d="M138 64 L146 26 L112 48 Z" fill="' + cfg.body + '" stroke="' + ink + '" stroke-width="2.5" stroke-linejoin="round"/>' +
+          '<path d="M134 57 L138 37 L120 49 Z" fill="' + cfg.inner + '" opacity=".9"/>',
+          'rotate(' + (-tilt) + ' 126 60)', 'ear-r'
+        ) +
+        '</g>';
+    }
+
+    if (species === 'dog') {
+      return '<g class="ears">' +
+        earWrap(
+          '<ellipse cx="46" cy="88" rx="17" ry="32" fill="' + cfg.accent + '" stroke="' + ink + '" stroke-width="2.4"/>' +
+          '<ellipse cx="46" cy="92" rx="9" ry="21" fill="' + cfg.inner + '" opacity=".75"/>',
+          'rotate(' + (tilt - 20) + ' 58 80)', 'ear-l'
+        ) +
+        earWrap(
+          '<ellipse cx="154" cy="88" rx="17" ry="32" fill="' + cfg.accent + '" stroke="' + ink + '" stroke-width="2.4"/>' +
+          '<ellipse cx="154" cy="92" rx="9" ry="21" fill="' + cfg.inner + '" opacity=".75"/>',
+          'rotate(' + (-tilt + 20) + ' 142 80)', 'ear-r'
+        ) +
+        '</g>';
+    }
+
+    if (species === 'rabbit') {
+      return '<g class="ears">' +
+        earWrap(
+          '<ellipse cx="84" cy="42" rx="12" ry="38" fill="' + cfg.body + '" stroke="' + ink + '" stroke-width="2.4"/>' +
+          '<ellipse cx="84" cy="44" rx="6" ry="27" fill="' + cfg.inner + '" opacity=".9"/>',
+          'rotate(' + tilt + ' 84 78)', 'ear-l'
+        ) +
+        earWrap(
+          '<ellipse cx="116" cy="42" rx="12" ry="38" fill="' + cfg.body + '" stroke="' + ink + '" stroke-width="2.4"/>' +
+          '<ellipse cx="116" cy="44" rx="6" ry="27" fill="' + cfg.inner + '" opacity=".9"/>',
+          'rotate(' + (-tilt) + ' 116 78)', 'ear-r'
+        ) +
+        '</g>';
+    }
+
+    if (species === 'panda') {
+      return '<g class="ears">' +
+        earWrap('<circle cx="68" cy="56" r="16" fill="' + ink + '"/>', 'rotate(' + tilt + ' 68 58)', 'ear-l') +
+        earWrap('<circle cx="132" cy="56" r="16" fill="' + ink + '"/>', 'rotate(' + (-tilt) + ' 132 58)', 'ear-r') +
+        '</g>';
+    }
+
+    if (species === 'fox') {
+      return '<g class="ears">' +
+        earWrap(
+          '<path d="M60 66 L48 22 L92 50 Z" fill="' + cfg.body + '" stroke="' + ink + '" stroke-width="2.5" stroke-linejoin="round"/>' +
+          '<path d="M66 58 L58 34 L82 51 Z" fill="' + cfg.accent + '" opacity=".55"/>',
+          'rotate(' + tilt + ' 74 60)', 'ear-l'
+        ) +
+        earWrap(
+          '<path d="M140 66 L152 22 L108 50 Z" fill="' + cfg.body + '" stroke="' + ink + '" stroke-width="2.5" stroke-linejoin="round"/>' +
+          '<path d="M134 58 L142 34 L118 51 Z" fill="' + cfg.accent + '" opacity=".55"/>',
+          'rotate(' + (-tilt) + ' 126 60)', 'ear-r'
+        ) +
+        '</g>';
+    }
+
+    return '<g class="ears">' +
+      earWrap(
+        '<path d="M80 62 C72 48 68 34 72 22 C78 34 86 44 92 51 Z" fill="' + cfg.belly + '" stroke="' + ink + '" stroke-width="2.2" stroke-linejoin="round"/>',
+        'rotate(' + tilt + ' 100 60)', 'ear-l'
+      ) +
+      earWrap(
+        '<path d="M120 62 C128 48 132 34 128 22 C122 34 114 44 108 51 Z" fill="' + cfg.belly + '" stroke="' + ink + '" stroke-width="2.2" stroke-linejoin="round"/>',
+        'rotate(' + (-tilt) + ' 100 60)', 'ear-r'
+      ) +
+      '<path d="M62 92 L48 82 L60 74 Z" fill="' + cfg.inner + '" stroke="' + ink + '" stroke-width="2" stroke-linejoin="round"/>' +
+      '<path d="M138 92 L152 82 L140 74 Z" fill="' + cfg.inner + '" stroke="' + ink + '" stroke-width="2" stroke-linejoin="round"/>' +
+      '</g>';
+  }
+
+  function face(species, cfg, mood) {
+    const ink = cfg.ink;
+    const eyeStroke = species === 'panda' ? '#FFFFFF' : ink;
+
+    let patches = '';
+    if (species === 'panda') {
+      patches = '<ellipse cx="82" cy="92" rx="14" ry="17" transform="rotate(-12 82 92)" fill="' + ink + '"/>' +
+        '<ellipse cx="118" cy="92" rx="14" ry="17" transform="rotate(12 118 92)" fill="' + ink + '"/>';
+    }
+
+    let muzzle = '';
+    if (species === 'dog') {
+      muzzle = '<ellipse cx="100" cy="109" rx="22" ry="15" fill="' + cfg.belly + '" opacity=".92"/>';
+    } else if (species === 'fox') {
+      muzzle = '<ellipse cx="100" cy="109" rx="20" ry="13" fill="' + cfg.belly + '" opacity=".95"/>';
+    } else if (species === 'dragon') {
+      muzzle = '<ellipse cx="100" cy="109" rx="18" ry="11" fill="' + cfg.belly + '" opacity=".92"/>';
+    } else {
+      muzzle = '<ellipse cx="100" cy="108" rx="13" ry="9" fill="' + cfg.belly + '" opacity=".85"/>';
+    }
+
+    let eyes = '';
+    if (mood === 'happy') {
+      eyes = '<g class="eyes">' +
+        '<path d="M75 95 Q82 87 89 95" fill="none" stroke="' + eyeStroke + '" stroke-width="3.6" stroke-linecap="round"/>' +
+        '<path d="M111 95 Q118 87 125 95" fill="none" stroke="' + eyeStroke + '" stroke-width="3.6" stroke-linecap="round"/>' +
+        '</g>';
+    } else if (mood === 'sad') {
+      eyes = '<g class="eyes">' +
+        '<path d="M75 90 Q82 97 89 90" fill="none" stroke="' + eyeStroke + '" stroke-width="3.4" stroke-linecap="round"/>' +
+        '<path d="M111 90 Q118 97 125 90" fill="none" stroke="' + eyeStroke + '" stroke-width="3.4" stroke-linecap="round"/>' +
+        '</g>';
+    } else if (species === 'panda') {
+      eyes = '<g class="eyes">' +
+        '<ellipse cx="82" cy="92" rx="6" ry="7" fill="#FFFFFF"/>' +
+        '<ellipse cx="118" cy="92" rx="6" ry="7" fill="#FFFFFF"/>' +
+        '<circle cx="82" cy="93" r="3.4" fill="' + ink + '"/>' +
+        '<circle cx="118" cy="93" r="3.4" fill="' + ink + '"/>' +
+        '<circle cx="80.8" cy="90.8" r="1.2" fill="#FFFFFF"/>' +
+        '<circle cx="116.8" cy="90.8" r="1.2" fill="#FFFFFF"/>' +
+        '</g>';
+    } else {
+      eyes = '<g class="eyes">' +
+        '<ellipse cx="82" cy="92" rx="5.6" ry="7.2" fill="' + ink + '"/>' +
+        '<ellipse cx="118" cy="92" rx="5.6" ry="7.2" fill="' + ink + '"/>' +
+        '<circle cx="80.2" cy="89.2" r="1.8" fill="#FFFFFF"/>' +
+        '<circle cx="116.2" cy="89.2" r="1.8" fill="#FFFFFF"/>' +
+        '</g>';
+    }
+
+    const cheekOpacity = mood === 'happy' ? '.45' : mood === 'sad' ? '.15' : '.28';
+    const cheeks = '<ellipse cx="66" cy="105" rx="7.5" ry="4" fill="' + cfg.accent + '" opacity="' + cheekOpacity + '"/>' +
+      '<ellipse cx="134" cy="105" rx="7.5" ry="4" fill="' + cfg.accent + '" opacity="' + cheekOpacity + '"/>';
+
+    const nose = '<path d="M96.5 104.5 Q100 101.5 103.5 104.5 Q102 108.5 100 108.5 Q98 108.5 96.5 104.5 Z" fill="' + ink + '"/>';
+
+    let mouth = '';
+    if (mood === 'happy') {
+      mouth = '<path d="M92 113 Q100 121 108 113" fill="none" stroke="' + ink + '" stroke-width="2.4" stroke-linecap="round"/>';
+    } else if (mood === 'sad') {
+      mouth = '<path d="M94 118 Q100 112 106 118" fill="none" stroke="' + ink + '" stroke-width="2.3" stroke-linecap="round"/>';
+    } else {
+      mouth = '<path d="M96 114 Q100 117 104 114" fill="none" stroke="' + ink + '" stroke-width="2.2" stroke-linecap="round"/>';
+    }
+
+    let extras = '';
+    if (species === 'cat') {
+      extras = '<g stroke="' + ink + '" stroke-width="1.4" stroke-linecap="round" opacity=".55">' +
+        '<path d="M65 105 L42 101"/><path d="M65 109 L42 113"/>' +
+        '<path d="M135 105 L158 101"/><path d="M135 109 L158 113"/>' +
+        '</g>';
+    } else if (species === 'dog') {
+      extras = mood === 'happy'
+        ? '<path d="M96 116 Q100 126 104 116 Z" fill="#E98B8B" stroke="' + ink + '" stroke-width="1.5" stroke-linejoin="round"/>'
+        : '';
+    } else if (species === 'rabbit') {
+      extras = '<g fill="#FFFFFF" stroke="' + ink + '" stroke-width="1.2">' +
+        '<rect x="96" y="116" width="3.4" height="6" rx="1.2"/>' +
+        '<rect x="100.6" y="116" width="3.4" height="6" rx="1.2"/>' +
+        '</g>';
+    } else if (species === 'fox') {
+      extras = '<g stroke="' + ink + '" stroke-width="1.3" stroke-linecap="round" opacity=".4">' +
+        '<path d="M66 107 L46 103"/><path d="M134 107 L154 103"/>' +
+        '</g>';
+    } else if (species === 'dragon') {
+      extras = '<g fill="none" stroke="' + cfg.accent + '" stroke-width="1.8" stroke-linecap="round" opacity=".8">' +
+        '<path d="M82 108 C62 104 52 96 44 84"/>' +
+        '<path d="M118 108 C138 104 148 96 156 84"/>' +
+        '</g>' +
+        '<circle cx="95" cy="105" r="1.2" fill="' + ink + '" opacity=".55"/>' +
+        '<circle cx="105" cy="105" r="1.2" fill="' + ink + '" opacity=".55"/>';
+    }
+
+    return patches + muzzle + eyes + cheeks + nose + mouth + extras;
+  }
+
+  function foreheadMark(cfg) {
+    return '<path d="M100 66 L106 73 L100 80 L94 73 Z" fill="' + cfg.accent + '" opacity=".55"/>';
+  }
+
+  function crown(cfg) {
+    return '<g>' +
+      '<path d="M78 46 L84 27 L92 39 L100 23 L108 39 L116 27 L122 46 Z" fill="#E6B04A" stroke="' + cfg.ink + '" stroke-width="2" stroke-linejoin="round"/>' +
+      '<circle cx="84" cy="42" r="2.2" fill="#B85C3E"/>' +
+      '<circle cx="100" cy="38" r="2.4" fill="#B85C3E"/>' +
+      '<circle cx="116" cy="42" r="2.2" fill="#B85C3E"/>' +
+      '</g>';
+  }
+
+  function head(species, cfg, level, mood) {
+    const tilt = mood === 'sad' ? -2.5 : mood === 'happy' ? 0.5 : 0;
+    return '<g class="head-wrap" transform="rotate(' + tilt + ' 100 132)">' +
+      '<g class="head-group">' +
+      ears(species, cfg, mood) +
+      '<circle cx="100" cy="92" r="44" fill="' + cfg.body + '" stroke="' + cfg.ink + '" stroke-width="2.5"/>' +
+      face(species, cfg, mood) +
+      (level >= 4 ? foreheadMark(cfg) : '') +
+      (level >= 5 ? crown(cfg) : '') +
+      '</g>' +
+      '</g>';
+  }
+
+  function particles(cfg) {
+    const pts = [
+      [100, 18], [150, 50], [170, 104], [150, 160],
+      [100, 184], [50, 160], [30, 104], [50, 50]
+    ];
+    return '<g class="pet-particles">' + pts.map(function (p, i) {
+      return '<circle class="pet-particle" cx="' + p[0] + '" cy="' + p[1] + '" r="' + (1.8 + (i % 3)) + '" fill="' + cfg.accent + '" opacity="0" style="--i:' + i + '"/>';
+    }).join('') + '</g>';
+  }
+
+  /* ── 宠物渲染入口 ─────────────────────────────────────── */
+
+  function renderPet(opts) {
+    const species = opts.species;
+    const cfg = SPECIES[species];
+    const score = opts.score;
+    const level = levelFromScore(score);
+    const stage = STAGES[level - 1];
+    const mood = opts.moodOverride || moodFromScore(score);
+    const seed = opts.seed == null ? 1 : opts.seed;
+    const reaction = opts.reaction || null;
+    const decorative = !!opts.decorative;
+    const h = hash(seed);
+
+    const blinkDuration = (4 + (h % 30) / 10).toFixed(1);
+    const blinkDelay = (-((h % 50) / 10)).toFixed(1);
+    const swayBase = mood === 'happy' ? 1.5 : mood === 'sad' ? 4.2 : 2.7;
+    const swayDuration = (swayBase + (h % 9) / 10).toFixed(1);
+    const swayDelay = (-((h % 20) / 10)).toFixed(1);
+    const earDelay = (-((h % 30) / 10)).toFixed(1);
+    const tailOrigin = TAIL_ORIGIN[species];
+    const scale = SCALES[level - 1];
+    const reactionClass = reaction ? ' reaction-' + reaction : '';
+    const aria = decorative
+      ? 'aria-hidden="true"'
+      : 'role="img" aria-label="' + cfg.name + '，第' + level + '阶段' + stage + '，心情' + moodLabel(mood) + '"';
+
+    return '<svg class="pet-svg" viewBox="0 0 200 200" width="200" height="200" ' + aria + '>' +
+      '<g class="pet-scale" transform="translate(100 180) scale(' + scale + ') translate(-100 -180)">' +
+      '<g class="pet-root' + reactionClass + '" style="' +
+        '--accent:' + cfg.accent + ';' +
+        '--blink-duration:' + blinkDuration + 's;' +
+        '--blink-delay:' + blinkDelay + 's;' +
+        '--sway-duration:' + swayDuration + 's;' +
+        '--sway-delay:' + swayDelay + 's;' +
+        '--ear-delay:' + earDelay + 's;' +
+        '--tail-x:' + tailOrigin[0] + 'px;' +
+        '--tail-y:' + tailOrigin[1] + 'px;' +
+      '">' +
+        '<ellipse class="pet-shadow" cx="100" cy="178" rx="52" ry="8" fill="#252A26" opacity=".08"/>' +
+        (level >= 4 ? aura(cfg) : '') +
+        (species === 'dragon' ? wings(cfg, level) : '') +
+        tail(species, cfg) +
+        body(species, cfg, level) +
+        head(species, cfg, level, mood) +
+        (level >= 5 ? particles(cfg) : '') +
+        '<circle class="evolve-burst" cx="100" cy="108" r="44" fill="none" stroke="' + cfg.accent + '" stroke-width="3" opacity="0"/>' +
+      '</g>' +
+      '</g>' +
+      '</svg>';
+  }
+
+  /* ── 页面状态 ─────────────────────────────────────────── */
+
+  const hero = {
+    species: 'cat',
+    score: 64,
+    moodOverride: null,
+    seed: 'hero'
+  };
+
+  // 方便直接预览某个物种/阶段：?species=dragon&score=90&mood=happy
+  const demoParams = new URLSearchParams(window.location.search);
+  if (demoParams.get('species') && SPECIES[demoParams.get('species')]) {
+    hero.species = demoParams.get('species');
+  }
+  if (demoParams.has('score')) {
+    hero.score = clamp(Number(demoParams.get('score')) || 0, 0, 100);
+  }
+  if (['happy', 'neutral', 'sad'].indexOf(demoParams.get('mood')) !== -1) {
+    hero.moodOverride = demoParams.get('mood');
+  }
+
+  const classPets = NAMES.map(function (name, i) {
+    return {
+      id: i + 1,
+      name: name,
+      species: SPECIES_PATTERN[i % SPECIES_PATTERN.length],
+      score: SCORES[i % SCORES.length],
+      seed: i + 1
+    };
+  });
+
+  const heroPet = document.getElementById('heroPet');
+  const heroPetCard = document.getElementById('heroPetCard');
+  const heroScore = document.getElementById('heroScore');
+  const scoreValue = document.getElementById('scoreValue');
+  const scoreRange = document.getElementById('scoreRange');
+  const heroStatus = document.getElementById('heroStatus');
+  const heroProgress = document.getElementById('heroProgress');
+  const stageRibbon = document.getElementById('stageRibbon');
+  const speciesName = document.getElementById('speciesName');
+  const moodName = document.getElementById('moodName');
+  const classGrid = document.getElementById('classGrid');
+  const reducedToggle = document.getElementById('reducedToggle');
+  const toast = document.getElementById('toast');
+
+  let toastTimer = null;
+
+  function showToast(message) {
+    toast.textContent = message;
+    toast.classList.add('show');
+    window.clearTimeout(toastTimer);
+    toastTimer = window.setTimeout(function () {
+      toast.classList.remove('show');
+    }, 1900);
+  }
+
+  function spawnSparks(container) {
+    if (!container) return;
+    const colors = ['#E6B04A', '#B85C3E', '#6BA6BC', '#D88FA4'];
+    for (let i = 0; i < 7; i++) {
+      const spark = document.createElement('span');
+      spark.className = 'spark';
+      const angle = (Math.PI * 2 * i) / 7 + Math.random() * 0.35;
+      const distance = 34 + Math.random() * 26;
+      spark.style.setProperty('--dx', (Math.cos(angle) * distance).toFixed(1) + 'px');
+      spark.style.setProperty('--dy', (Math.sin(angle) * distance - 12).toFixed(1) + 'px');
+      spark.style.background = colors[i % colors.length];
+      spark.style.animationDelay = (i * 24) + 'ms';
+      container.appendChild(spark);
+      window.setTimeout(function () { spark.remove(); }, 1200);
+    }
+  }
+
+  function updateTabs(level, mood) {
+    document.querySelectorAll('#speciesTabs button').forEach(function (button) {
+      button.classList.toggle('active', button.dataset.species === hero.species);
+    });
+
+    document.querySelectorAll('#moodTabs button').forEach(function (button) {
+      const current = hero.moodOverride || 'auto';
+      button.classList.toggle('active', button.dataset.mood === current);
+    });
+
+    document.querySelectorAll('#stageRail .stage-chip').forEach(function (button, index) {
+      button.classList.toggle('active', index === level - 1);
+    });
+
+    speciesName.textContent = SPECIES[hero.species].name;
+    moodName.textContent = hero.moodOverride
+      ? moodLabel(hero.moodOverride)
+      : '自动 · ' + moodLabel(mood);
+  }
+
+  function renderHero(reaction) {
+    const level = levelFromScore(hero.score);
+    const stage = STAGES[level - 1];
+    const mood = hero.moodOverride || moodFromScore(hero.score);
+    const cfg = SPECIES[hero.species];
+
+    heroPet.innerHTML = renderPet({
+      species: hero.species,
+      score: hero.score,
+      moodOverride: hero.moodOverride,
+      seed: hero.seed,
+      reaction: reaction || null,
+      decorative: false
+    });
+
+    heroScore.textContent = String(hero.score);
+    scoreValue.textContent = String(hero.score);
+    scoreRange.value = String(hero.score);
+    heroStatus.textContent = 'Lv' + level + ' · ' + stage + ' · ' + moodLabel(mood);
+    heroProgress.style.width = hero.score + '%';
+    stageRibbon.textContent = 'Lv' + level + ' · ' + stage;
+    heroPetCard.style.setProperty('--hero-accent', cfg.accent);
+    updateTabs(level, mood);
+
+    if (reaction === 'cheer') {
+      spawnSparks(heroPet);
+    }
+  }
+
+  function changeHeroScore(delta) {
+    const next = clamp(hero.score + delta, 0, 100);
+    if (next === hero.score) {
+      showToast(delta > 0 ? '已经满 100 分啦，可以准备换一位新伙伴了。' : '现在是 0 分，先给一个鼓励吧。');
+      return;
+    }
+    const beforeLevel = levelFromScore(hero.score);
+    hero.score = next;
+    const afterLevel = levelFromScore(hero.score);
+    let reaction;
+    if (afterLevel > beforeLevel) reaction = 'evolve';
+    else reaction = delta > 0 ? 'cheer' : 'comfort';
+    renderHero(reaction);
+    if (reaction === 'evolve') {
+      showToast('升级到 Lv' + afterLevel + ' · ' + STAGES[afterLevel - 1]);
+    }
+  }
+
+  /* ── 全班预览 ─────────────────────────────────────────── */
+
+  function renderMiniCard(pet, reaction) {
+    const level = levelFromScore(pet.score);
+    const stage = STAGES[level - 1];
+    return '<article class="mini-card" data-id="' + pet.id + '">' +
+      (reaction === 'evolve' ? '<span class="evolve-toast">Lv' + level + '</span>' : '') +
+      '<div class="mini-pet">' +
+        renderPet({
+          species: pet.species,
+          score: pet.score,
+          seed: pet.seed,
+          reaction: reaction || null,
+          decorative: true
+        }) +
+      '</div>' +
+      '<div class="mini-name">' + pet.name + '</div>' +
+      '<div class="mini-row">' +
+        '<span class="mini-score">' + pet.score + '</span>' +
+        '<span class="mini-lv">Lv' + level + ' · ' + stage + '</span>' +
+      '</div>' +
+      '<div class="mini-actions">' +
+        '<button type="button" data-action="down" aria-label="给' + pet.name + '减 1 分">−1</button>' +
+        '<button type="button" data-action="up" aria-label="给' + pet.name + '加 1 分">+1</button>' +
+      '</div>' +
+      '</article>';
+  }
+
+  function renderClassGrid() {
+    classGrid.innerHTML = classPets.map(function (pet) {
+      return renderMiniCard(pet, null);
+    }).join('');
+  }
+
+  /* ── 事件绑定 ─────────────────────────────────────────── */
+
+  document.getElementById('heroUp').addEventListener('click', function () { changeHeroScore(1); });
+  document.getElementById('heroDown').addEventListener('click', function () { changeHeroScore(-1); });
+
+  scoreRange.addEventListener('input', function (event) {
+    hero.score = Number(event.target.value);
+    renderHero(null);
+  });
+
+  document.getElementById('speciesTabs').addEventListener('click', function (event) {
+    const button = event.target.closest('button[data-species]');
+    if (!button) return;
+    hero.species = button.dataset.species;
+    renderHero(null);
+  });
+
+  document.getElementById('moodTabs').addEventListener('click', function (event) {
+    const button = event.target.closest('button[data-mood]');
+    if (!button) return;
+    hero.moodOverride = button.dataset.mood === 'auto' ? null : button.dataset.mood;
+    renderHero(null);
+  });
+
+  document.getElementById('stageRail').addEventListener('click', function (event) {
+    const button = event.target.closest('button[data-score]');
+    if (!button) return;
+    hero.score = Number(button.dataset.score);
+    renderHero(null);
+  });
+
+  reducedToggle.addEventListener('change', function (event) {
+    document.documentElement.classList.toggle('reduced', event.target.checked);
+  });
+
+  classGrid.addEventListener('click', function (event) {
+    const button = event.target.closest('button[data-action]');
+    if (!button) return;
+    const card = button.closest('.mini-card');
+    if (!card) return;
+    const id = Number(card.dataset.id);
+    const pet = classPets.find(function (item) { return item.id === id; });
+    if (!pet) return;
+
+    const delta = button.dataset.action === 'up' ? 1 : -1;
+    const next = clamp(pet.score + delta, 0, 100);
+    if (next === pet.score) {
+      showToast(delta > 0
+        ? pet.name + ' 已经满 100 分啦。'
+        : pet.name + ' 已经是 0 分，先给个鼓励吧。');
+      return;
+    }
+
+    const beforeLevel = levelFromScore(pet.score);
+    pet.score = next;
+    const afterLevel = levelFromScore(pet.score);
+    let reaction;
+    if (afterLevel > beforeLevel) reaction = 'evolve';
+    else reaction = delta > 0 ? 'cheer' : 'comfort';
+
+    const wrapper = document.createElement('div');
+    wrapper.innerHTML = renderMiniCard(pet, reaction);
+    const newCard = wrapper.firstElementChild;
+    card.replaceWith(newCard);
+
+    if (reaction === 'cheer') {
+      spawnSparks(newCard.querySelector('.mini-pet'));
+    }
+    if (reaction === 'evolve') {
+      showToast(pet.name + ' 升到 Lv' + afterLevel + ' · ' + STAGES[afterLevel - 1]);
+    }
+  });
+
+  /* ── 初始化 ───────────────────────────────────────────── */
+
+  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  reducedToggle.checked = prefersReduced;
+  document.documentElement.classList.toggle('reduced', prefersReduced);
+
+  renderHero(null);
+  renderClassGrid();
+})();
+</script>
+</body>
+</html>
