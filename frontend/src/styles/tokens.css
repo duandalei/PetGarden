@@ -1,0 +1,45 @@
+:root {
+  --paper: #faf6ec;
+  --surface: #fffdf7;
+  --surface-sunken: #f1e9da;
+  --line: #ded3bf;
+  --line-strong: #c9bba3;
+
+  --ink: #252a26;
+  --ink-soft: #5f665d;
+  --ink-faint: #8a8f86;
+
+  --moss: #4f6f52;
+  --moss-deep: #3e5a42;
+  --moss-soft: #e3ebdd;
+
+  --clay: #b85c3e;
+  --honey: #d99b2b;
+  --sky: #6ba6bc;
+  --rose: #b45f72;
+  --plum: #7b5e7b;
+
+  --success: #3f7a5a;
+  --warning: #a66a1f;
+  --danger: #a94438;
+  --focus: #2f6fb3;
+
+  --pet-cat: #d98a4f;
+  --pet-dog: #9a6236;
+  --pet-rabbit: #d88fa4;
+  --pet-panda: #3b413c;
+  --pet-fox: #e18a4f;
+  --pet-dragon: #2e6e68;
+
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-pill: 999px;
+
+  --shadow-card: 0 8px 24px rgba(63, 52, 35, 0.07);
+  --shadow-pop: 0 16px 48px rgba(63, 52, 35, 0.16);
+
+  --font-ui: 'Microsoft YaHei UI', 'PingFang SC', 'Noto Sans SC',
+    'Source Han Sans SC', system-ui, sans-serif;
+  --font-display: 'Georgia', 'Songti SC', 'SimSun', serif;
+}

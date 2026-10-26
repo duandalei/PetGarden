@@ -1,21 +1,21 @@
 [project]
 name = "petgarden"
 version = "0.1.0"
-description = "Add your description here"
+description = "PetGarden 班级宠物园：本地优先的课堂宠物养成系统"
 authors = [
     { name = "duandalei", email = "duandalei921@gmail.com" }
 ]
 requires-python = ">=3.12"
 dependencies = [
     "fastapi>=0.162.0",
-    "itsdangerous>=2.2.0",
+
     "pydantic-settings>=2.16.1",
     "sqlalchemy>=2.1.6",
     "uvicorn[standard]>=0.54.0",
 ]
 
 [project.scripts]
-petgarden = "petgarden:main"
+petgarden = "petgarden.__main__:main"
 
 [build-system]
 requires = ["uv_build>=0.11.32,<0.12.0"]
@@ -30,6 +30,11 @@ dev = [
 
 [tool.ruff]
 target-version = "py312"
+line-length = 110
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM"]
+ignore = ["B008"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

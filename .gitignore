@@ -13,12 +13,14 @@ __pycache__/
 htmlcov/
 coverage/
 
-# Runtime data: SQLite DB, backups, session signing key
+# Runtime data: SQLite DB, backups
 data/
 *.db
+*.db-journal
+*.db-wal
+*.db-shm
 *.sqlite
 *.sqlite3
-secret.key
 
 # Logs
 *.log
@@ -29,12 +31,17 @@ secret.key
 !.env.example
 
 # Frontend
+node_modules/
 frontend/node_modules/
 frontend/dist/
 frontend/.vite/
+frontend/coverage/
+*.tsbuildinfo
 
 # Editor / OS
 .idea/
+.codeartsdoer/
+.claude/settings.local.json
 .DS_Store
 Thumbs.db
 desktop.ini
